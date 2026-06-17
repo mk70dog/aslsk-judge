@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ASL SK Judge">
+<title>ASL SK Judge</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#111;color:#ddd;font-family:monospace;font-size:14px}
+#hdr{background:#1a1a1a;border-bottom:2px solid #333;padding:8px 12px;position:sticky;top:0;z-index:10}
+#hdr .t{color:#FFD700;font-weight:bold;font-size:16px}
+#hdr .s{color:#777;font-size:10px}
+#nav{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:4px;background:#1a1a1a;border-bottom:1px solid #333}
+.nb{background:transparent;border:1px solid #333;border-radius:3px;color:#777;padding:7px 2px;font-size:11px;font-family:monospace;cursor:pointer;text-align:center}
+.nb.on{background:#222;border-color:#FFD700;color:#FFD700}
+#main{padding:10px;padding-bottom:60px;max-width:100%}
+.card{background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:12px;margin-bottom:10px}
+.sh{font-size:11px;color:#FFD700;letter-spacing:1px;border-bottom:1px solid #333;padding-bottom:6px;margin-bottom:10px}
+.lbl{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.btns{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px}
+.b{background:#111;border:1px solid #333;color:#777;padding:7px 11px;border-radius:3px;font-family:monospace;font-size:12px;cursor:pointer}
+.b.on{background:#2a2a2a;border-color:#FFD700;color:#FFD700}
+.b.red.on{background:#2a1010;border-color:#cc3333;color:#cc3333}
+/* ダイス */
+.dr{margin-bottom:12px}
+.df{font-size:30px;display:inline-block;vertical-align:middle}
+.dbs{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.db{width:46px;height:46px;background:#111;border:1px solid #333;color:#777;border-radius:3px;font-size:16px;font-weight:bold;font-family:monospace;cursor:pointer}
+.db.on{background:#222;border-color:#FFD700;color:#ddd}
+/* 結果 */
+.res{border-radius:4px;padding:14px;margin-bottom:10px;border-width:2px;border-style:solid}
+.rv{font-size:28px;font-weight:bold}
+.rmain{border-radius:3px;padding:8px 12px;margin:8px 0;font-size:15px;font-weight:bold}
+.rnote{font-size:12px;margin-bottom:4px}
+.rarr{color:#444;font-size:18px;margin:0 8px}
+.rrow{display:flex;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+/* SW行 */
+.swrow{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.swlbl{min-width:85px;font-size:12px}
+.cb{width:36px;height:36px;background:#111;border:1px solid #333;color:#777;border-radius:3px;font-size:16px;font-family:monospace;cursor:pointer}
+.cb.on{background:#222;border-color:#FFD700;color:#ddd}
+.cnum{min-width:22px;text-align:center;color:#FFD700;font-weight:bold}
+/* グループカード */
+.gc{background:#222;border:1px solid #333;border-left:3px solid #FFD700;border-radius:3px;padding:10px;margin-bottom:8px}
+.gh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ghL{color:#FFD700;font-size:12px;font-weight:bold}
+.ghR{color:#FFD700;font-size:11px}
+.delbtn{background:transparent;border:1px solid #aa0000;color:#aa0000;padding:1px 8px;border-radius:2px;font-size:11px;cursor:pointer}
+/* ユニットカード */
+.uc{background:#222;border:1px solid #333;border-left:3px solid #6699cc;border-radius:3px;padding:8px;margin-bottom:6px}
+.ul{font-size:14px;font-weight:bold}
+.us{display:flex;gap:12px;margin-top:4px;font-size:11px;color:#777;flex-wrap:wrap}
+/* サマリ */
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sumcard{background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:10px}
+.sumval{font-size:24px;font-weight:bold}
+/* LOS行 */
+.lrow{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.llbl{min-width:100px;font-size:12px}
+/* シナリオ */
+.scbtn{background:#111;border:1px solid #333;border-radius:3px;padding:8px 10px;margin:2px;cursor:pointer;text-align:left}
+.scbtn.on{background:#222;border-color:#FFD700}
+.vbox{background:#222;border:1px solid #FFD70044;border-radius:3px;padding:8px;margin-bottom:8px;font-size:13px}
+.ssr{background:#222;border:1px solid #FFD70033;border-radius:3px;padding:6px 8px;margin-bottom:4px;font-size:12px}
+.addbtn{width:100%;background:transparent;border:1px dashed #333;color:#777;padding:8px;border-radius:3px;font-size:13px;font-family:monospace;cursor:pointer;margin-top:4px}
+/* テンキー */
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;max-width:200px}
+.npbtn{background:#1a1a1a;border:1px solid #333;color:#ddd;padding:12px 8px;border-radius:3px;font-size:16px;font-weight:bold;font-family:monospace;cursor:pointer;text-align:center}
+.npbtn.on{background:#222;border-color:#FFD700;color:#FFD700}
+.npbtn.del{color:#cc3333;border-color:#cc333344}
+.fp-display{background:#111;border:1px solid #333;border-radius:3px;padding:8px 12px;font-size:22px;font-weight:bold;color:#FFD700;text-align:center;margin-bottom:6px;min-height:44px;font-family:monospace}
+.resetbtn{background:transparent;border:1px solid #333;color:#777;padding:5px 14px;border-radius:3px;font-size:12px;font-family:monospace;cursor:pointer;margin-top:8px}
+.rollbtn{flex:1;background:#222;border:1px solid #FFD700;color:#ddd;padding:10px;border-radius:3px;font-size:14px;font-weight:bold;font-family:monospace;cursor:pointer}
+.judgbtn{flex:1;background:#111;border:1px solid #FFD700;color:#FFD700;padding:10px;border-radius:3px;font-size:14px;font-family:monospace;cursor:pointer}
+.notebox{background:#222;border:1px solid #333;border-radius:3px;padding:7px 10px;margin-bottom:10px;font-size:11px;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center}
+</style>
+</head>
+<body>
+<div id="hdr" style="display:flex;justify-content:space-between;align-items:center"><div><div class="s">ASL SK JUDGE SYSTEM v3.0</div><div class="t">🎖 SK#1 歩兵ルール対応</div></div><button onclick="ALLCLEAR()" style="background:#2a1010;border:1px solid #cc3333;color:#cc3333;padding:5px 12px;border-radius:3px;font-family:monospace;font-size:11px;cursor:pointer">🗑 ALL CLEAR</button></div>
+<div id="nav">
+  <button class="nb on" onclick="TAB('fire')">🎯 射撃判定</button>
+  <button class="nb" onclick="TAB('mc')">⚠ MC/PTC</button>
+  <button class="nb" onclick="TAB('cc')">⚔ CCPh</button>
+  <button class="nb" onclick="TAB('rally')">🔄 回復判定</button>
+  <button class="nb" onclick="TAB('scen')">🗺 シナリオ</button>
+  <button class="nb" onclick="TAB('unit')">📋 ユニット</button>
+</div>
+<div id="main"></div>
+
+<script>
+// ===== DATA =====
+var IFT_COLS=[1,2,4,6,8,12,16,20,24,30];
+var IFT_LBL=["1","2","4","6","8","12","16","20","24","30"];
+var IFT=[
+  ["-","-","-","-","PTC","MC","MC","1MC","1MC","1MC"],
+  ["-","-","-","PTC","MC","MC","1MC","1MC","2MC","2MC"],
+  ["-","-","PTC","MC","MC","1MC","1MC","2MC","2MC","KIA"],
+  ["-","PTC","MC","MC","1MC","1MC","2MC","2MC","KIA","KIA"],
+  ["PTC","MC","MC","1MC","1MC","2MC","2MC","KIA","KIA","KIA"],
+  ["MC","MC","1MC","1MC","2MC","2MC","KIA","KIA","KIA","KIA"],
+  ["MC","1MC","1MC","2MC","2MC","KIA","KIA","KIA","KIA","1KIA"],
+  ["1MC","1MC","2MC","2MC","KIA","KIA","KIA","KIA","1KIA","1KIA"],
+  ["1MC","2MC","2MC","KIA","KIA","KIA","KIA","1KIA","1KIA","2KIA"],
+  ["2MC","2MC","KIA","KIA","KIA","KIA","1KIA","1KIA","2KIA","2KIA"],
+  ["2MC","KIA","KIA","KIA","KIA","1KIA","1KIA","2KIA","2KIA","2KIA"]
+];
+var RES={1:0,2:0,4:1,6:1,8:2,12:2,16:4,20:6,24:6,30:8};
+var CCR=["1:3","1:2","1:1","2:1","3:1","4:1","5:1","6:1+"];
+var CCN=[13,12,11,10,9,8,7,6];
+var SWT=[
+  {id:"lmg38",lbl:"LMG 3-8",fp:3,b:8,rof:0,pp:2,note:"B#8 ROFなし PP2"},
+  {id:"lmg26",lbl:"LMG 2-6",fp:2,b:8,rof:0,pp:2,note:"ソ連軍用 B#8"},
+  {id:"mmg410",lbl:"MMG 4-10",fp:4,b:10,rof:2,pp:4,note:"B#10 ROF#2 PP4"},
+  {id:"mmg512",lbl:"MMG 5-12",fp:5,b:12,rof:2,pp:4,note:"B#12 ROF#2 PP4"},
+  {id:"hmg716",lbl:"HMG 7-16",fp:7,b:16,rof:2,pp:6,note:"B#16 ROF#2 PP6"},
+  {id:"hmg816",lbl:"HMG 8-16",fp:8,b:16,rof:2,pp:6,note:"B#16 ROF#2 PP6"},
+  {id:"ft241",lbl:"FT 24-1(火炎放射器)",fp:24,b:99,rof:0,pp:4,note:"X#10(エリート以外X#8)TEM・指揮官DRM不適用 1T1回"},
+  {id:"dc301",lbl:"DC 30-1(爆薬)",fp:30,b:99,rof:0,pp:3,note:"AFPhに爆発 X#12(エリート以外X#10) TEM不適用(生け垣除く)"}
+];
+// SWユニットタブ用詳細情報
+var SW_DETAIL=[
+  {id:"lmg38",name:"LMG 軽機関銃 3-8",fp:3,rof:"なし",b:8,x:"—",pp:2,
+   note:"最も一般的なSW。B#8なので故障しやすい。ROFなし(1射のみ)。"},
+  {id:"lmg26",name:"LMG 軽機関銃 2-6(ソ連)",fp:2,rof:"なし",b:8,x:"—",pp:2,
+   note:"ソ連軍用。FPが低い。"},
+  {id:"mmg410",name:"MMG 中機関銃 4-10",fp:4,rof:2,b:10,x:"—",pp:4,
+   note:"ROF#2(🟥dr<=2で維持)。MPh移動後はAFPh射撃不可。PP4。"},
+  {id:"mmg512",name:"MMG 中機関銃 5-12",fp:5,rof:2,b:12,x:"—",pp:4,
+   note:"ROF#2(🟥dr<=2で維持)。FPが高くB#も高め。PP4。"},
+  {id:"hmg716",name:"HMG 重機関銃 7-16",fp:7,rof:2,b:16,x:"—",pp:6,
+   note:"ROF#2。非常に高いFPとB#。PP6。MPh移動後はAFPh射撃不可。"},
+  {id:"hmg816",name:"HMG 重機関銃 8-16",fp:8,rof:2,b:16,x:"—",pp:6,
+   note:"ROF#2。最高FPのMG。PP6。"},
+  {id:"ft241",name:"FT 火炎放射器 24-1",fp:24,rof:"なし",b:"—",x:10,pp:4,
+   note:"エリートMMC使用時X#10、エリート以外X#8(さらに未熟兵-1)。TEM・指揮官DRM・PBFボーナス不適用。CX+1とLOS妨害のみ適用。1プレイヤーターンに1回のみ使用可。クギ付け状態での射撃不可。"},
+  {id:"dc301",name:"DC 爆薬 30-1",fp:30,rof:"—",b:"—",x:12,pp:3,
+   note:"MPh中に配置→AFPhに30FPで爆発。エリート以外使用時X#10。CXユニット使用時IFT DRM+1。生け垣以外のTEM適用なし(生け垣はDC自体に不適用)。"}
+];
+var LOS=[
+  {id:"bush",lbl:"繁み",d:1},{id:"wht",lbl:"麦バタケ",d:1},
+  {id:"orch",lbl:"果樹園",d:1},{id:"wood",lbl:"林ヘクスサイド",d:1},
+  {id:"smk",lbl:"煙幕手榴弾",d:2},{id:"fsmk",lbl:"完全煙幕",d:3}
+];
+var UNT={
+  USA:{lbl:"🇺🇸 米軍",col:"#6699cc",
+    mmc:[
+      {lbl:"[6]^3-6-7[E]",fp:6,rng:6,mor:7,bm:8,smk:3,sr:true,ei:false,hs:false,af:true,note:"S5登場 煙幕3"},
+      {lbl:"[6]^1-6-6(1)",fp:6,rng:6,mor:6,bm:8,smk:3,sr:false,ei:false,hs:false,af:true,note:"S3・S5登場 煙幕3"},
+      {lbl:"[5]^2-4-6(2)",fp:5,rng:4,mor:6,bm:7,smk:2,sr:false,ei:false,hs:false,af:true,note:"S4登場 煙幕2"},
+      {lbl:"[5]^2-3-6(G)",fp:5,rng:3,mor:6,bm:7,smk:2,sr:false,ei:false,hs:false,af:true,green:true,note:"未熟兵(新兵G)煙幕2"},
+      {lbl:"[7]-4-[7](E)",fp:7,rng:4,mor:7,bm:8,smk:3,sr:false,ei:true,hs:false,af:true,note:"S1・S4登場 士気値下線あり(ELR免除)煙幕3"},
+      {lbl:"[6]-6-7(E)",fp:6,rng:6,mor:7,bm:7,smk:3,sr:false,ei:false,hs:false,af:true,note:"S4登場 煙幕3"},
+      {lbl:"3-4-7[E](HS)",fp:3,rng:4,mor:7,bm:7,smk:0,sr:true,ei:false,hs:true,af:false,note:"S5登場"},
+      {lbl:"3-3-[7][E](HS)",fp:3,rng:3,mor:7,bm:7,smk:0,sr:true,ei:true,hs:true,af:false,note:"S1・S3登場 士気値下線(ELR免除)"},
+      {lbl:"3-4-6(E)(HS)",fp:3,rng:4,mor:6,bm:6,smk:0,sr:false,ei:false,hs:true,af:false,note:"S5登場"}
+    ],
+    smc:[
+      {lbl:"10-2",mor:10,bm:9,cmd:-2,note:"S4登場"},
+      {lbl:"9-2",mor:9,bm:8,cmd:-2,note:"S1(T3)・S3登場"},
+      {lbl:"9-1",mor:9,bm:8,cmd:-1,note:"S5登場"},
+      {lbl:"8-1",mor:8,bm:7,cmd:-1,note:"S1初期・T1登場"},
+      {lbl:"8-0",mor:8,bm:7,cmd:0,note:"S1(T2)・S3登場"}
+    ],
+    elr:[
+      {from:"[7]-4-[7](E)",to:"[6]^1-6-6(1)"},
+      {from:"[6]^1-6-6(1)",to:"[5]^2-4-6(2)"},
+      {from:"[6]^3-6-7[E]",to:"3-4-7[E](HS)"}
+    ]},
+  GER:{lbl:"🇩🇪 独軍",col:"#aa9966",
+    mmc:[
+      {lbl:"[5]^2-4-8[E]",fp:5,rng:4,mor:8,bm:8,smk:2,sr:true,ei:false,hs:false,af:true,note:"S1(T2-3)・S2登場 煙幕2"},
+      {lbl:"4^2-6-8[E]",fp:4,rng:6,mor:8,bm:8,smk:2,sr:true,ei:false,hs:false,af:false,note:"S6登場 煙幕2"},
+      {lbl:"4^1-6-7(1)",fp:4,rng:6,mor:7,bm:7,smk:1,sr:false,ei:false,hs:false,af:false,note:"S1・S2・S5登場 煙幕1"},
+      {lbl:"4-4-7(2)",fp:4,rng:4,mor:7,bm:7,smk:0,sr:false,ei:false,hs:false,af:false,note:"S1・S3・S4登場"},
+      {lbl:"4-3-6(C)",fp:4,rng:3,mor:6,bm:5,smk:0,sr:false,ei:false,hs:false,af:false,green:true,note:"S3登場 未熟兵(徴集兵C)"},
+      {lbl:"2-3-7(2)(HS)",fp:2,rng:3,mor:7,bm:6,smk:0,sr:false,ei:false,hs:true,af:false,note:"ELR置換先(4^1-6-7→)"},
+      {lbl:"2-4-7(1)(HS)",fp:2,rng:4,mor:7,bm:6,smk:0,sr:false,ei:false,hs:true,af:false,note:"ELR置換先(4-4-7→)"}
+    ],
+    smc:[
+      {lbl:"9-2",mor:9,bm:8,cmd:-2,note:"S2・S6登場"},
+      {lbl:"9-1",mor:9,bm:8,cmd:-1,note:"S1(降下猟兵)・S6登場"},
+      {lbl:"8-1",mor:8,bm:7,cmd:-1,note:"S1(1058連隊)・S2・S5登場"},
+      {lbl:"8-0",mor:8,bm:7,cmd:0,note:"S2・S6登場"},
+      {lbl:"7-0",mor:7,bm:6,cmd:0,note:"S1(919連隊)・S3登場"},
+      {lbl:"6+1",mor:6,bm:5,cmd:1,note:"S5初期(バランスで8-0に変更可)"}
+    ],
+    elr:[
+      {from:"[5]^2-4-8[E]",to:"4-4-7(2)"},
+      {from:"4^2-6-8[E]",to:"4-4-7(2)"},
+      {from:"4^1-6-7(1)",to:"2-3-7(2)(HS)"},
+      {from:"4-4-7(2)",to:"2-3-7(2)(HS)"}
+    ]},
+  SOV:{lbl:"🇷🇺 ソ連",col:"#996666",
+    mmc:[
+      {lbl:"4^2-5-8[E]",fp:4,rng:5,mor:8,bm:8,smk:0,sr:true,ei:false,hs:false,af:false,note:"S6登場"},
+      {lbl:"4-4-7[1]",fp:4,rng:4,mor:7,bm:7,smk:0,sr:true,ei:false,hs:false,af:false,note:"S2登場"},
+      {lbl:"4-2-6(C)",fp:4,rng:2,mor:6,bm:5,smk:0,sr:false,ei:false,hs:false,af:false,green:true,note:"S2登場 未熟兵(徴集兵C)"},
+      {lbl:"[5]-2-7(1)",fp:5,rng:2,mor:7,bm:7,smk:0,sr:false,ei:false,hs:false,af:true,note:"S2(突撃集団)登場"}
+    ],
+    smc:[
+      {lbl:"9-2",mor:9,bm:8,cmd:-2,note:"S2(バランスで9-1に変更可)"},
+      {lbl:"9-1",mor:9,bm:8,cmd:-1,note:"S6登場"},
+      {lbl:"9-0",mor:9,bm:8,cmd:0,note:"S2(突撃集団)登場"},
+      {lbl:"8-1",mor:8,bm:7,cmd:-1,note:"S2・S6登場"},
+      {lbl:"8-0",mor:8,bm:7,cmd:0,note:"S2・S6登場"},
+      {lbl:"7-0",mor:7,bm:6,cmd:0,note:"S2登場"}
+    ],
+    elr:[
+      {from:"4^2-5-8[E]",to:"4-4-7[1]"},
+      {from:"4-4-7[1]",to:"4-2-6(C)"}
+    ]}
+};
+
+var SCN=[
+  {id:"S1",jp:"ヴィエルヴィルの奪還",en:"Retaking Vierville",
+   loc:"フランス・ヴィエルヴィル",dt:"1944/6/7(D+1)",trn:5,map:"ボードN(A〜V)",
+   first:"米軍先セットアップ → 独軍先攻",
+   vic:"終了時、建物N5・N6・M4・L3に統制状態の独軍なし → 米軍勝利",
+   bal:{us:"L3を勝利条件から除外",ger:"独軍T3増援に5-4-8×1追加"},
+   ssr:[],
+   f:{
+     USA:{elr:5,u:[
+       "【初期】7-4-7(E)×3・3-3-7(E)×1・8-1×1(N3/N4/M5/L5に1MMC以下)",
+       "【T1・北端】7-4-7(E)×3・8-1×1",
+       "【T2・北端】7-4-7(E)×2・8-0×1",
+       "【T3・北端】7-4-7(E)×2・3-3-7(E)×2・9-2×1"
+     ]},
+     GER:{elr:3,u:[
+       "【T1東端・1058歩兵連隊】4-6-7(1)×3・8-1×1",
+       "【T1西端・919歩兵連隊】4-4-7(2)×3・7-0×1",
+       "【T2東端・第6降下猟兵】5-4-8(E)×3・9-1×1",
+       "【T3東端・第6降下猟兵】5-4-8(E)×2・9-1×1"
+     ]}
+   }},
+  {id:"S2",jp:"ネズミの戦争",en:"War of the Rats",
+   loc:"ロシア・スターリングラード",dt:"1942/9/26",trn:6,map:"ボードN(A〜P)",
+   first:"ロシア軍先セットアップ → 独軍先攻",
+   vic:"終了時、独軍がF8・L6・O6を支配 → 独軍勝利",
+   bal:{us:"ソ連4-2-6×2→4-5-8×2",ger:"ソ連9-2→9-1"},
+   ssr:["SSR1：独軍5-4-8分隊の煙幕指数+2(dr<=4で配置可)"],
+   f:{
+     GER:{elr:3,u:[
+       "【初期・北側エリア】5-4-8(E)×4・4-6-7(1)×7",
+       "9-2×1・9-1×1・8-1×1・8-0×1",
+       "HMG 5-12×1・LMG 3-8×1・FT 24-1×1・DC 30-1×2"
+     ]},
+     SOV:{elr:3,u:[
+       "【初期・南側エリア】4-4-7(1)×5・4-2-6(C)×5",
+       "8-1×1・8-0×1・7-0×1・HMG 4-12×1・LMG 2-8×1",
+       "【突撃集団・南端よりdr<現T数で進入】5-2-7(1)×3・9-0×1・LMG 2-6×1"
+     ]}
+   }},
+  {id:"S3",jp:"単純な方程式",en:"Simple Equation",
+   loc:"ドイツ・アーヘン",dt:"1944/10/12",trn:7,map:"ボードy(A〜P)+ボードz(R〜GG)",
+   first:"独軍先セットアップ → 米軍先攻",
+   vic:"米軍がボードz建物を25ヘクス以上支配で即時勝利",
+   bal:{us:"独4-4-7×1除去",ger:"独軍にMMG追加"},
+   ssr:["SSR1：独軍は自軍エリアの建物2棟を秘密裏に要塞化指定可(TEM+1)。木造→+3/石造→+4。米軍が攻撃/進入時に公開"],
+   f:{
+     GER:{elr:3,u:[
+       "【初期】4-4-7(2)×7・4-3-6(C)×5",
+       "8-1×1・8-0×1・7-0×2・HMG 7-16×1・LMG 3-8×3"
+     ]},
+     USA:{elr:3,u:[
+       "【初期・ボードy(>=7)】6-6-6(1)×14・3-3-7(E)×1",
+       "9-2×1・9-1×1・8-0×2・MMG 4-10×2・FT 24-1×1"
+     ]}
+   }},
+  {id:"S4",jp:"帰還",en:"Welcome Back",
+   loc:"ルクセンブルク・オジンゲン",dt:"1944/12/16",trn:5,map:"ボードN(A〜K/I〜Y)",
+   first:"米軍先セットアップ → T5のみ独軍先攻",
+   vic:"独軍が西端(I1〜Y1)から10VP以上脱出で即時独軍勝利(分隊2VP/HS 1VP/-1SMC 2VP/-0SMC 1VP)",
+   bal:{us:"勝利条件を10VP→12VPに引き上げ",ger:"米軍FT×1除去"},
+   ssr:[
+     "SSR1：降雪 — 各RPh開始時に独軍がDR。>=10で降雪開始/継続、<=3で停止。降雪中：射程6+の射撃に+1妨害DRM",
+     "SSR2：米軍7-4-7分隊の煙幕指数+2(dr<=5で配置可)"
+   ],
+   f:{
+     USA:{elr:3,u:[
+       "【初期・ヘクス>=4】7-4-7(E)×2・6-6-7(E)×1・6-6-6(1)×2・5-4-6(2)×3",
+       "10-2×1・8-1×1・8-0×1・HMG 8-16×1・MMG 4-10×2・FT 24-1×2"
+     ]},
+     GER:{elr:3,u:[
+       "【T1・東端】4-4-7(2)×14・2-3-7(2)×2",
+       "9-1×1・8-1×2・7-0×2・MMG 5-12×2・LMG 3-8×3"
+     ]}
+   }},
+  {id:"S5",jp:"コルヴィルの制圧",en:"Clearing Colleville",
+   loc:"フランス・ノルマンディ",dt:"1944/6/6",trn:5,map:"ボードK(A〜S)",
+   first:"独軍先セットアップ → T2のみ独軍先攻",
+   vic:"終了時、M5から3ヘクス以内の石造建物に統制状態の独軍MMCなし → 米軍勝利",
+   bal:{us:"独6+1→8-0",ger:"T2増援の独4-6-7×1除去"},
+   ssr:["SSR1：米軍HS増援数をdr(1個)で決定。T1: dr1-3=4個/4-6=3個, T2: dr1-3=5個/4-6=4個"],
+   f:{
+     GER:{elr:3,u:[
+       "【初期・H〜R】4-6-7(1)×6・8-1×1・6+1×1・HMG 7-16×1・LMG 3-8×1",
+       "【T2・南端】4-6-7(1)×4・8-0×1・MMG 5-12×1"
+     ]},
+     USA:{elr:3,u:[
+       "【初期・T以西】6-6-6(1)×4・3-4-6(E)(HS)×1・9-1×1・MMG 4-10×1",
+       "【T1・N10以西北端】6-6-6(1)×3・3-4-6(1)(HS)×?(SSR1)・9-2×1・8-0×1・MMG 4-10×1",
+       "【T2・J10以西北端】6-6-6(1)×2・3-4-6(1)(HS)×?(SSR1)・8-1×1・MMG 4-10×1"
+     ]}
+   }},
+  {id:"S6",jp:"東方からの解放",en:"Released from the East",
+   loc:"ロシア・イストラ",dt:"1941/12/11",trn:6,map:"ボードN(A〜N)",
+   first:"独軍先セットアップ → ロシア軍先攻",
+   vic:"終了時、ロシア軍がR2・L6・D3のうち2棟以上を支配 → ロシア軍勝利",
+   bal:{us:"独8-0→9-1",ger:"SSR3を削除"},
+   ssr:[
+     "SSR1：ロシア軍冬季迷彩 — 開豁地を警戒移動する場合、FFMO(-1DRM)不適用。通常移動には適用",
+     "SSR2：ロシア軍戦術予備隊 — 最大5MMC・1SMC・2SWをT3に北端または東端から進入可",
+     "SSR3：独軍全MMCの混乱士気値+1(バランス調整でロシア有利選択時は削除)"
+   ],
+   f:{
+     GER:{elr:4,u:[
+       "【初期・ヘクス番号<=9】4-6-8(E)×9",
+       "9-2×1・8-1×1・8-0×1・MMG 5-12×1・LMG 3-8×3"
+     ]},
+     SOV:{elr:3,u:[
+       "【T1・北端(SSR2でT3も可)】4-5-8(E)×14",
+       "9-1×1・8-1×1・8-0×1・MMG 4-10×1・LMG 2-6×1・DC 30-1×1"
+     ]}
+   }}
+];
+
+// ===== STATE =====
+var S={
+  tab:"fire",
+  fire:{ph:"PFPh",swc:{},grps:[{id:1,ut:"squad",st:"good",fp:6,sh:"normal",sw:[]}],nid:2,
+        tem:0,ldr:0,cx:false,los:{},ffmo:false,ffnam:false,rd:0,wd:0,res:null},
+  mc:{ptc:false,type:"NMC",mor:7,elr:3,ldr:0,dm:false,rd:0,wd:0,res:null},
+  cc:{af:4,df:4,adrm:0,rd:0,wd:0,res:null},
+  rl:{self:true,bm:7,bld:false,dm:false,ldr:-1,rd:0,wd:0,res:null},
+  sc:{sel:null},
+  un:{nat:"USA",tab:"mmc"}
+};
+
+// ===== HELPERS =====
+var FACE=["","⚀","⚁","⚂","⚃","⚄","⚅"];
+function df(v){return v?FACE[v]:"🎲";}
+function ci(fp){for(var i=0;i<IFT_COLS.length;i++)if(fp<=IFT_COLS[i])return i;return IFT_COLS.length-1;}
+function ift(fp,dr){var c=ci(fp),r=Math.max(0,Math.min(10,dr-2));return{r:IFT[r][c],col:IFT_LBL[c],ci:c};}
+function rm(r){
+  var M={"-":{t:"効果なし",c:"#777",i:"—"},"PTC":{t:"PTC(クギ付け判定)",c:"#FFD700",i:"📌"},
+    "MC":{t:"NMC(士気チェック)",c:"#FFD700",i:"⚠"},"1MC":{t:"1MC(+1 士気チェック)",c:"#cc8800",i:"⚠"},
+    "2MC":{t:"2MC(+2 士気チェック)",c:"#cc3333",i:"‼"},"KIA":{t:"KIA(即時除去)",c:"#cc3333",i:"💀"},
+    "1KIA":{t:"損耗(1KIA)",c:"#aa0000",i:"☠"},"2KIA":{t:"損耗×2(2KIA)",c:"#aa0000",i:"☠"}};
+  return M[r]||{t:r,c:"#aaa",i:"?"};
+}
+function rnd(){return Math.ceil(Math.random()*6);}
+function roll(cb){
+  var n=0,iv=setInterval(function(){
+    var r=rnd(),w=rnd();
+    if(++n>14){clearInterval(iv);cb(r,w);}
+    else{S[S.tab]&&(S[S.tab].rd=r,S[S.tab].wd=w);Draw();}
+  },80);
+}
+
+// SW展開
+function exSW(){
+  var l=[];
+  SWT.forEach(function(t){
+    var n=S.fire.swc[t.id]||0;
+    for(var i=0;i<n;i++)l.push({id:t.id,uid:t.id+"_"+i,lbl:n>1?t.lbl+" #"+(i+1):t.lbl,fp:t.fp,b:t.b,rof:t.rof});
+  });
+  return l;
+}
+function swMap(){var m={};exSW().forEach(function(s){m[s.uid]=s;});return m;}
+function gfp(g){
+  var m=swMap(),hs=g.ut==="hs",hasSW=g.sw.length>0;
+  var base=(hs&&hasSW)?0:g.fp;
+  var sf=g.sw.reduce(function(s,uid){return s+(m[uid]?m[uid].fp:0);},0);
+  var f=base+sf;
+  // クギ付け・指揮官単独は地域射撃×1/2
+  if(g.st==="pinned"||g.ut==="smc")f/=2;
+  if(S.fire.ph==="AFPh"){
+    // AFPh: 全射撃×1/2(地域射撃)
+    // PBF: ×2×1/2=等倍。下線FPあり→端数切り上げ後+1FP
+    // TPBF: ×3×1/2=×1.5。下線FPあり→端数切り上げ後+1FP
+    // 通常: ×1/2。下線FPあり→端数切り上げ後+1FP
+    // 遠距離: ×1/4。下線FPのAssault Fireボーナス無効
+    if(g.sh==="long"){
+      f/=4; // AFPh半減＋遠距離半減=×1/4、Assault Fire無効
+    } else if(g.sh==="pbf"){
+      // PBF×2とAFPh×1/2が相殺→等倍
+      if(g.af&&g.ut==="squad"){
+        // 下線FP分隊のみAssault Fire：等倍のまま端数切り上げ不要(整数)→+1FP
+        f=f+1;
+      }
+    } else if(g.sh==="tpbf"){
+      f=f*3/2;
+      if(g.af&&g.ut==="squad"){
+        f=Math.ceil(f)+1;
+      }
+    } else {
+      // 通常射程
+      f=f/2;
+      if(g.af&&g.ut==="squad"){
+        f=Math.ceil(f)+1;
+      }
+    }
+  } else {
+    if(g.sh==="pbf")f*=2;
+    else if(g.sh==="tpbf")f*=3;
+    else if(g.sh==="long")f/=2;
+  }
+  return f;
+}
+function totalFP(){return Math.max(1,S.fire.grps.reduce(function(s,g){return s+gfp(g);},0));}
+function losTotal(){return LOS.reduce(function(s,o){return s+((S.fire.los[o.id]||0)*o.d);},0);}
+function fireDRM(){return S.fire.tem+S.fire.ldr+(S.fire.cx?1:0)+losTotal()+(S.fire.ffmo?-1:0)+(S.fire.ffnam?-1:0);}
+
+// ===== DRAW =====
+function Draw(){document.getElementById("main").innerHTML=PAGE();}
+function TAB(t){
+  S.tab=t;
+  document.querySelectorAll(".nb").forEach(function(b,i){
+    b.classList.toggle("on",["fire","mc","cc","rally","scen","unit"][i]===t);
+  });
+  Draw();
+}
+function PAGE(){
+  if(S.tab==="fire")return FIRE();
+  if(S.tab==="mc")return MC();
+  if(S.tab==="cc")return CC();
+  if(S.tab==="rally")return RALLY();
+  if(S.tab==="scen")return SCEN();
+  if(S.tab==="unit")return UNIT();
+  return "";
+}
+
+// ===== DICE ROW =====
+function DR(lbl,val,col,fn){
+  var h='<div class="dr"><div class="lbl">'+lbl+'</div>';
+  h+='<span class="df" style="color:'+col+'">'+df(val)+'</span>';
+  h+='<div class="dbs">';
+  for(var i=1;i<=6;i++)h+='<button class="db'+(val===i?" on":"")+'" onclick="'+fn+i+')">'+i+'</button>';
+  h+='</div></div>';
+  return h;
+}
+function ROLLBTNS(rollFn,judgeFn,hasVals){
+  var h='<div style="display:flex;gap:8px;margin-top:6px">';
+  if(hasVals)h+='<button class="judgbtn" style="flex:1" onclick="'+judgeFn+'()">📋 判定実行</button>';
+  else h+='<div style="color:#555;font-size:12px;padding:6px">← 両ダイスを入力して判定</div>';
+  h+='</div>';
+  return h;
+}
+
+// ===== FIRE =====
+function FIRE(){
+  var f=S.fire,insts=exSW(),m=swMap();
+  var asgn=[],unasgn=[];
+  f.grps.forEach(function(g){g.sw.forEach(function(u){asgn.push(u);});});
+  insts.forEach(function(s){if(asgn.indexOf(s.uid)<0)unasgn.push(s);});
+  var tp=totalFP(),drm=fireDRM(),los=losTotal();
+  var h="";
+
+  // STEP1
+  h+='<div class="card"><div class="sh">◆ STEP 1 フェイズ・SW</div>';
+  h+='<div class="lbl">フェイズ</div><div class="btns">';
+  [["PFPh","準備射撃②"],["DFF","防御臨機射撃"],["DFPh","防御射撃④"],["AFPh","前進射撃⑤"]].forEach(function(p){
+    h+='<button class="b'+(f.ph===p[0]?" on":"")+'" onclick="FS(\'ph\',\''+p[0]+'\')">'+p[1]+'</button>';
+  });
+  h+='</div>';
+  h+='<div class="lbl">SW(＋/−で台数)</div>';
+  SWT.forEach(function(t){
+    var n=f.swc[t.id]||0;
+    h+='<div class="swrow"><span class="swlbl" style="color:'+(n>0?"#ddd":"#777")+'">'+t.lbl+'</span>';
+    h+='<button class="cb" onclick="FSW(\''+t.id+'\',-1)"'+(n===0?" disabled":"")+'>−</button>';
+    h+='<span class="cnum">'+n+'</span>';
+    h+='<button class="cb'+(n>0?" on":"")+'" onclick="FSW(\''+t.id+'\',1)"'+(n>=4?" disabled":"")+'>＋</button>';
+    if(n>0)h+='<span style="font-size:11px;color:#777">×'+n+'='+t.fp*n+'FP'+(t.b<99?" B#"+t.b:"")+(t.rof?" ROF"+t.rof:"")+'</span>';
+    h+='</div>';
+  });
+  h+='</div>';
+
+  // STEP2 グループ
+  h+='<div class="card"><div class="sh">◆ STEP 2 射撃グループ(FG)</div>';
+  f.grps.forEach(function(g,idx){
+    var gf=gfp(g),hs=g.ut==="hs",hasSW=g.sw.length>0;
+    var base=(hs&&hasSW)?0:g.fp,sf=g.sw.reduce(function(s,uid){return s+(m[uid]?m[uid].fp:0);},0);
+    h+='<div class="gc">';
+    h+='<div class="gh"><span class="ghL">グループ'+(idx+1)+'</span>';
+    h+='<div style="display:flex;gap:6px;align-items:center"><span class="ghR">FP '+(gf%1===0?gf:gf.toFixed(1))+'</span>';
+    if(f.grps.length>1)h+='<button class="delbtn" onclick="FRG('+g.id+')">✕</button>';
+    h+='</div></div>';
+    h+='<div class="lbl">種別・状態</div><div class="btns">';
+    [["squad","分隊"],["hs","HS"],["smc","指揮官"]].forEach(function(t){
+      h+='<button class="b'+(g.ut===t[0]?" on":"")+'" onclick="FGS('+g.id+',\'ut\',\''+t[0]+'\')">'+t[1]+'</button>';
+    });
+    h+='<button class="b'+(g.st==="good"?" on":"")+'" onclick="FGS('+g.id+',\'st\',\'good\')">統制</button>';
+    h+='<button class="b red'+(g.st==="pinned"?" on":"")+'" onclick="FGS('+g.id+',\'st\',\'pinned\')">クギ付け×½</button>';
+    h+='</div>';
+    if(g.ut!=="smc"){
+      h+='<div class="lbl">固有FP'+(hs&&hasSW?" (HS+SW→0)":"")+'</div>';
+      if(hs&&hasSW){
+        h+='<div style="color:#555;font-size:12px;padding:4px 0">HS+SW使用時は固有FP=0(自動)</div>';
+      } else {
+        // テンキー表示
+        h+='<div class="fp-display">'+(g.fp===0?"0":g.fp)+'</div>';
+        h+='<div class="numpad">';
+        ["7","8","9","4","5","6","1","2","3","C","0","BS"].forEach(function(d){
+          var cls=d==="C"?"npbtn del":d==="BS"?"npbtn del":"npbtn";
+          var lbl=d==="BS"?"⌫":d==="C"?"CLR":d;
+          h+='<button class="'+cls+'" onclick="NPAD('+g.id+',\''+d+'\')" style="'+(d==="C"||d==="BS"?'color:#cc3333;font-size:12px':'')+'">'+lbl+'</button>';
+        });
+        h+='</div>';
+        h+='<div style="font-size:10px;color:#555;margin-bottom:6px">最大30FP。CLR=クリア、⌫=1桁削除</div>';
+      }
+      if(S.fire.ph==="AFPh"&&g.ut==="squad"){
+        h+='<div class="btns" style="margin-top:4px">';
+        h+='<button class="b'+(g.af?" on":"")+'" onclick="FGS('+g.id+',\'af\','+(g.af?'false':'true')+')" style="border-color:'+(g.af?"#FFD700":"#555")+';color:'+(g.af?"#FFD700":"#777")+'">';
+        h+='FP下線あり(Assault Fire対象)'+(g.af?"✔":"")+'</button>';
+        h+='</div>';
+        if(g.af)h+='<div style="font-size:11px;color:#FFD700;margin-top:2px">⚡ Assault Fire：AFPh半減後に端数切り上げ＋1FP追加(遠距離除く)</div>';
+      }
+      if(g.ut==="squad"||g.ut==="hs"){
+        h+='<div class="btns" style="margin-top:4px">';
+        h+='<button class="b'+(g.green?" on":"")+'" onclick="FGS('+g.id+',\'green\','+(g.green?'false':'true')+')" style="'+(g.green?'border-color:#cc8800;color:#cc8800':'border-color:#333;color:#555')+'">未熟兵(Green/Conscript)'+(g.green?"✔":"")+'</button>';
+        h+='</div>';
+        if(g.green)h+='<div style="font-size:11px;color:#cc8800;margin-top:2px">⚠ 畏縮時：IFT列2列低下(通常は1列)</div>';
+      }
+    }
+    h+='<div class="lbl">射撃条件</div><div class="btns">';
+    [["normal","通常"],["pbf","PBF×2"],["tpbf","TPBF×3"],["long","遠距離×½"]].forEach(function(t){
+      h+='<button class="b'+(g.sh===t[0]?" on":"")+'" onclick="FGS('+g.id+',\'sh\',\''+t[0]+'\')">'+t[1]+'</button>';
+    });
+    h+='</div>';
+    if(insts.length>0){
+      h+='<div class="lbl">SW割当</div><div class="btns">';
+      insts.forEach(function(sw){
+        var og=f.grps.filter(function(x){return x.id!==g.id&&x.sw.indexOf(sw.uid)>=0;})[0];
+        var dis=!!og,sel=g.sw.indexOf(sw.uid)>=0;
+        h+='<button class="b'+(sel?" on":"")+'"'+(dis?" disabled":"")+' onclick="'+(dis?"":"FSWg("+g.id+",\'"+sw.uid+"\')")+'">'+sw.lbl+(dis?" (G"+(f.grps.indexOf(og)+1)+")":"")+'</button>';
+      });
+      h+='</div>';
+    }
+    h+='<div style="font-size:11px;color:#777">内訳：固有'+base+(sf>0?"+SW"+sf:"")
+      +(g.st==="pinned"||g.ut==="smc"?"×½":"")
+      +(g.sh==="pbf"?"×2":g.sh==="tpbf"?"×3":g.sh==="long"?"×½":"")
+      +(f.ph==="AFPh"&&g.sh==="normal"?"×½(AFPh)":"")
+      +" = <b style='color:#FFD700'>"+(gf%1===0?gf:gf.toFixed(1))+"FP</b></div>";
+    h+='</div>';
+  });
+  if(f.grps.length<4)h+='<button class="addbtn" onclick="FAG()">＋ グループを追加</button>';
+  if(unasgn.length>0)h+='<div style="color:#cc8800;font-size:11px;margin-top:6px">⚠ 未割当SW：'+unasgn.map(function(s){return s.lbl;}).join("・")+'</div>';
+  h+='</div>';
+
+  // STEP3 DRM
+  h+='<div class="card"><div class="sh">◆ STEP 3 地形・DRM</div>';
+  h+='<div class="lbl">目標地形TEM</div><div class="btns">';
+  [[0,"開豁地±0"],[1,"林+1"],[2,"木造建物+2"],[3,"石造建物+3"],[1,"生け垣+1"],[1,"丘+1"]].forEach(function(t){
+    h+='<button class="b'+(f.tem===t[0]?" on":"")+'" onclick="FS(\'tem\','+t[0]+')">'+t[1]+'</button>';
+  });
+  h+='</div>';
+  h+='<div class="lbl">指揮官DRM</div><div class="btns">';
+  [["なし",0],["−1",-1],["−2",-2],["+1",1]].forEach(function(t){
+    h+='<button class="b'+(f.ldr===t[1]?" on":"")+'" onclick="FS(\'ldr\','+t[1]+')">'+t[0]+'</button>';
+  });
+  h+='</div>';
+  h+='<div class="lbl">その他</div><div class="btns">';
+  h+='<button class="b'+(f.cx?" on":"")+'" onclick="FT(\'cx\')">CX +1</button>';
+  h+='<button class="b'+(f.ffmo?" on":"")+'" onclick="FT(\'ffmo\')">FFMO −1</button>';
+  h+='<button class="b'+(f.ffnam?" on":"")+'" onclick="FT(\'ffnam\')">FFNAM −1</button>';
+  h+='</div>';
+  h+='<div class="lbl">LOS妨害(＋/−で個数)</div>';
+  LOS.forEach(function(o){
+    var n=f.los[o.id]||0;
+    h+='<div class="lrow"><span class="llbl" style="color:'+(n>0?"#ddd":"#777")+'">'+o.lbl+' <b style="color:#FFD700">+'+o.d+'</b></span>';
+    h+='<button class="cb" onclick="FLOS(\''+o.id+'\',-1)"'+(n===0?" disabled":"")+'>−</button>';
+    h+='<span class="cnum">'+n+'</span>';
+    h+='<button class="cb'+(n>0?" on":"")+'" onclick="FLOS(\''+o.id+'\',1)">＋</button>';
+    if(n>0)h+='<span style="font-size:11px;color:#777">+'+(o.d*n)+'</span>';
+    h+='</div>';
+  });
+  if(los>0)h+='<div style="font-size:11px;color:#777;margin-top:4px">LOS合計: <b style="color:#FFD700">+'+los+'</b></div>';
+  h+='</div>';
+
+  // サマリ
+  h+='<div class="sum">';
+  h+='<div class="sumcard"><div class="lbl">合計FP → IFT列</div>';
+  h+='<div class="sumval" style="color:#FFD700">'+(tp%1===0?tp:tp.toFixed(1))+'FP</div>';
+  h+='<div style="font-size:12px;color:#777">→ <b style="color:#FFD700">'+IFT_LBL[ci(tp)]+'</b>列</div>';
+  f.grps.forEach(function(g,i){var gf=gfp(g);h+='<div style="font-size:10px;color:#777">G'+(i+1)+': '+(gf%1===0?gf:gf.toFixed(1))+'FP</div>';});
+  h+='</div>';
+  h+='<div class="sumcard"><div class="lbl">合計DRM</div>';
+  var dc=drm>0?"#cc3333":drm<0?"#FFD700":"#ddd";
+  h+='<div class="sumval" style="color:'+dc+'">'+(drm>0?"+":"")+drm+'</div></div></div>';
+
+  // 注記
+  var notes=[];
+  if(ci(tp)>=2)notes.push({c:"#cc8800",l:"⚠ DR10以上",d:"→ KIA/2MC発生帯"});
+  notes.push({c:"#cc3333",l:"💀 DR12(6-6)",d:"→ 自動失敗＋損耗"});
+  if(insts.some(function(s){return s.rof>0;})){
+    var hasPinnedNote=f.grps.some(function(g){return g.st==="pinned";});
+    if(f.ph==="AFPh"){
+      notes.push({c:"#555",l:"🟥dr(ROF)",d:"→ AFPhではROF維持不可"});
+    } else if(hasPinnedNote){
+      notes.push({c:"#555",l:"🟥dr(ROF)",d:"→ クギ付け状態ユニットあり：ROF維持不可"});
+    } else {
+      notes.push({c:"#FFD700",l:"🟥dr(ROF)",d:"→ ROF維持判定(≤ROF#で維持)"});
+    }
+  }
+  if(insts.length>0)notes.push({c:"#cc8800",l:"⚠ 修正前DR",d:"→ ≥B#でSW故障"});
+  if(f.ldr===0)notes.push({c:"#777",l:"🔻 ゾロ目(指揮官なし)",d:"→ 畏縮：IFT列1列低下"});
+  if(notes.length){
+    h+='<div class="notebox">';
+    notes.forEach(function(n){h+='<div style="color:'+n.c+';white-space:nowrap">'+n.l+'</div><div style="color:#777">'+n.d+'</div>';});
+    h+='</div>';
+  }
+
+  // STEP4 ダイス
+  h+='<div class="card"><div class="sh">◆ STEP 4 ダイスロール</div>';
+  h+=DR("🟥 色付きダイス(ROF判定用)",f.rd,"#e74c3c","FD('rd',");
+  h+=DR("⬜ 白ダイス",f.wd,"#ccc","FD('wd',");
+  h+=ROLLBTNS("FROLL","FJUDGE",f.rd&&f.wd);
+  h+='</div>';
+
+  // 結果
+  if(f.res){
+    var r=f.res,m2=rm(r.ift.r);
+    h+='<div class="res" style="border-color:'+m2.c+'">';
+    h+='<div class="rrow"><div><div class="lbl">修正前DR</div><div class="rv">'+r.raw+'</div></div>';
+    h+='<span class="rarr">→</span>';
+    h+='<div><div class="lbl">修正後DR('+(r.drm>=0?"+":"")+r.drm+')</div><div class="rv" style="color:#FFD700">'+r.mod+'</div></div>';
+    h+='<span class="rarr">→</span>';
+    h+='<div><div class="lbl">IFT '+r.ift.col+'列</div><div style="font-size:22px">'+m2.i+'</div></div></div>';
+    h+='<div class="rmain" style="background:#222;border:1px solid '+m2.c+'44;color:'+m2.c+'">'+m2.i+' '+m2.t+'</div>';
+    if(r.raw===12)h+='<div class="rnote" style="color:#cc3333">⚠ 修正前DR12 → 自動失敗＋損耗</div>';
+    if(r.cow)h+='<div class="rnote" style="color:#cc8800">⚠ 畏縮(Cower)：IFT列1列低下</div>';
+    r.swr.forEach(function(s){
+      if(s.fail)h+='<div class="rnote" style="color:#cc3333">😵 '+s.lbl+' 故障！(DR'+r.raw+'≥B#'+s.b+')</div>';
+      else if(s.b<99)h+='<div class="rnote" style="color:#FFD700">👍 '+s.lbl+' 故障なし</div>';
+      if(s.ro)h+='<div class="rnote" style="color:'+(s.ro==="維持成功"?"#FFD700":"#777")+'">ROF'+s.ro+'</div>';
+    });
+    if(r.res!==null){
+      if(typeof r.res==="object"){
+        var rd2=r.res;
+        h+='<div class="rnote" style="color:#777">残留FP: '+(rd2.fp>0?rd2.fp+'FP':'なし');
+        if(rd2.plusDRM>0)h+=' ← 基準列'+rd2.baseCol+'→調整後'+rd2.adjCol+'列(+DRM'+rd2.plusDRM+'段階低下)';
+        h+='</div>';
+      } else {
+        h+='<div class="rnote" style="color:#777">残留FP:'+(r.res>0?r.res+"FP":"なし")+'</div>';
+      }
+    }
+    h+='<button class="resetbtn" onclick="FRES()">↩ リセット</button></div>';
+  }
+  return h;
+}
+
+// 射撃イベント
+function FS(k,v){S.fire[k]=v;S.fire.res=null;Draw();}
+function FT(k){S.fire[k]=!S.fire[k];S.fire.res=null;Draw();}
+function FSW(id,d){
+  var n=Math.max(0,Math.min(4,(S.fire.swc[id]||0)+d));
+  if(n<(S.fire.swc[id]||0)){
+    var ru=id+"_"+((S.fire.swc[id]||0)-1);
+    S.fire.grps.forEach(function(g){g.sw=g.sw.filter(function(u){return u!==ru;});});
+  }
+  S.fire.swc[id]=n;S.fire.res=null;Draw();
+}
+function FLOS(id,d){S.fire.los[id]=Math.max(0,(S.fire.los[id]||0)+d);S.fire.res=null;Draw();}
+function FGS(id,k,v){S.fire.grps.forEach(function(g){if(g.id===id)g[k]=v;});S.fire.res=null;Draw();}
+function FSWg(gid,uid){
+  S.fire.grps.forEach(function(g){
+    if(g.id!==gid)return;
+    var i=g.sw.indexOf(uid);
+    if(i>=0)g.sw.splice(i,1);else g.sw.push(uid);
+  });
+  S.fire.res=null;Draw();
+}
+function FAG(){S.fire.grps.push({id:S.fire.nid++,ut:"squad",st:"good",fp:6,af:false,green:false,sh:"normal",sw:[]});S.fire.res=null;Draw();}
+function FRG(id){S.fire.grps=S.fire.grps.filter(function(g){return g.id!==id;});S.fire.res=null;Draw();}
+function FD(k,v){S.fire[k]=v;S.fire.res=null;Draw();}
+function FRES(){S.fire.res=null;S.fire.rd=0;S.fire.wd=0;Draw();}
+function FROLL(){
+  roll(function(r,w){S.fire.rd=r;S.fire.wd=w;FJUDGE();});
+}
+function FJUDGE(){
+  var f=S.fire,r=f.rd,w=f.wd;
+  if(!r||!w)return;
+  var raw=r+w,drm=fireDRM(),mod=raw+drm;
+  var tp=totalFP(),it=ift(tp,mod);
+  // 畏縮適用：列インデックスをcowerCols分低下(0未満にはしない)
+  if(isCower&&cowerCols>0){
+    var newCi=Math.max(0,it.ci-cowerCols);
+    it={r:IFT[Math.max(0,Math.min(10,mod-2))][newCi],col:IFT_LBL[newCi],ci:newCi,cowered:true,cowerCols:cowerCols};
+  }
+  var insts=exSW();
+  // 畏縮：ゾロ目かつ指揮官DRMなし。未熟兵グループがあれば2列低下
+  var isCower=(r===w)&&f.ldr===0;
+  var cowerCols=0;
+  if(isCower){
+    // 未熟兵が含まれるグループがあれば2列、なければ1列
+    var hasGreen=f.grps.some(function(g){return g.green;});
+    cowerCols=hasGreen?2:1;
+  }
+  var swr=insts.map(function(s){
+    // ROF維持判定：①AFPh不可 ②クギ付けグループあり不可 ③畏縮発生時不可
+    var hasPinned=f.grps.some(function(g){return g.st==="pinned";});
+    var rofResult=null;
+    if(s.rof>0){
+      if(f.ph==="AFPh"){
+        rofResult="AFPh→維持不可";
+      } else if(hasPinned){
+        rofResult="クギ付けあり→維持不可";
+      } else if(isCower){
+        rofResult="畏縮発生→維持不可";
+      } else {
+        rofResult=r<=s.rof?"維持成功":"維持失敗";
+      }
+    }
+    return{lbl:s.lbl,b:s.b,fail:s.b<99&&raw>=s.b,ro:rofResult};
+  });
+  // 残留FP計算(DFF/SFF/FPF時のみ)
+  var res2=null;
+  if(f.ph==="DFF"||f.ph==="SFF"||f.ph==="FPF"){
+    var resSteps=[0,0,0,1,1,2,2,4,6,6,8]; // IFT列インデックス0〜10に対応
+    var baseResIdx=it.ci;
+    // プラスDRMの数だけ段階低下(CX+1・LOS妨害各+1・指揮官プラス修正+1)
+    // マイナスDRMは考慮しない
+    var plusDRM=(f.cx?1:0)+losTotal()+(f.ldr>0?f.ldr:0);
+    var resIdx=Math.max(0,baseResIdx-plusDRM);
+    var resStepsArr=[0,0,0,1,1,2,2,4,6,6,8];
+    res2={fp:resStepsArr[resIdx]||0,plusDRM:plusDRM,baseCol:IFT_LBL[baseResIdx],adjCol:IFT_LBL[resIdx]};
+  }
+  f.res={raw:raw,mod:mod,drm:drm,ift:it,cow:isCower,cowerCols:cowerCols,swr:swr,res:res2};
+  Draw();
+}
+
+// ===== MC =====
+function MC(){
+  var m=S.mc;
+  var mdrm=m.ptc?0:{NMC:0,"1MC":1,"2MC":2,"3MC":3}[m.type]||0;
+  var tdrm=mdrm+m.ldr+(m.dm?4:0);
+  var h="";
+  h+='<div class="card"><div class="sh">MC/PTC種別</div>';
+  h+='<div class="btns">';
+  h+='<button class="b'+(m.ptc?"":" on")+'" onclick="MS(\'ptc\',false)">MC(士気チェック)</button>';
+  h+='<button class="b'+(m.ptc?" on":"")+'" onclick="MS(\'ptc\',true)">PTC(クギ付け判定)</button>';
+  h+='</div>';
+  if(!m.ptc){
+    h+='<div class="lbl">MC種別</div><div class="btns">';
+    ["NMC","1MC","2MC","3MC"].forEach(function(t){
+      h+='<button class="b'+(m.type===t?" on":"")+'" onclick="MS(\'type\',\''+t+'\')">'+t+'</button>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div class="card"><div class="sh">ユニット設定</div>';
+  h+='<div class="lbl">ユニット種別</div><div class="btns">';
+  h+='<button class="b'+(m.utype==="mmc"?" on":"")+'" onclick="MS(\'utype\',\'mmc\')">MMC(分隊・HS)</button>';
+  h+='<button class="b'+(m.utype==="smc"?" on":"")+'" onclick="MS(\'utype\',\'smc\')">SMC(指揮官)</button>';
+  h+='</div>';
+  h+='<div class="lbl">士気値</div><div class="btns">';
+  [5,6,7,8,9].forEach(function(v){h+='<button class="b'+(m.mor===v?" on":"")+'" onclick="MS(\'mor\','+v+')">'+(v)+'</button>';});
+  h+='</div>';
+  if(m.utype==="mmc"){
+    h+='<div class="lbl">ELR(限界値='+(m.mor+m.elr)+')</div><div class="btns">';
+    [1,2,3,4,5].forEach(function(v){h+='<button class="b'+(m.elr===v?" on":"")+'" onclick="MS(\'elr\','+v+')">'+(v)+'</button>';});
+    h+='</div>';
+  }
+  h+='<div class="lbl">'+(m.utype==="smc"?"別指揮官DRM":"同スタック指揮官DRM")+'</div><div class="btns">';
+  [["なし",0],["−1",-1],["−2",-2],["+1(6+1)",1]].forEach(function(t){
+    h+='<button class="b'+(m.ldr===t[1]?" on":"")+'" onclick="MS(\'ldr\','+t[1]+')">'+(t[0])+'</button>';
+  });
+  h+='</div>';
+  if(m.utype==="mmc"){
+    h+='<div class="lbl">ELR超過置換</div><div class="btns">';
+    h+='<button class="b'+(m.ldrImm?"":" on")+'" onclick="MS(\'ldrImm\',false)">置換あり(通常)</button>';
+    h+='<button class="b'+(m.ldrImm?" on":"")+'" onclick="MS(\'ldrImm\',true)" style="'+(m.ldrImm?'border-color:#FFD700;color:#FFD700':'border-color:#333;color:#555')+'">士気値下線あり(ELR置換免除)'+(m.ldrImm?"✔":"")+'</button>';
+    h+='</div>';
+    if(m.ldrImm)h+='<div style="font-size:11px;color:#FFD700;margin-bottom:6px">✅ このユニットはELR超過でもクラス低下置換なし</div>';
+  }
+  h+='<div class="lbl">DM状態</div><div class="btns">';
+  h+='<button class="b'+(m.dm?"":" on")+'" onclick="MS(\'dm\',false)">DMなし</button>';
+  h+='<button class="b red'+(m.dm?" on":"")+'" onclick="MS(\'dm\',true)">DM状態+4</button>';
+  h+='</div></div>';
+  h+='<div class="card" style="background:#1a1a1a;font-size:12px;color:#777">'+(m.utype==="smc"?"【SMC指揮官】":"【MMC分隊/HS】")+' 士気値'+m.mor+' / DRM'+(tdrm>=0?"+":"")+tdrm+(m.utype==="mmc"?' / ELR限界値'+(m.mor+m.elr):"")+'</div>';
+  h+='</div></div>';
+  h+='<div class="card" style="background:#222;font-size:12px;color:#777">士気値'+m.mor+' / DRM+'+(tdrm>=0?"+":"")+tdrm+' / ELR限界値'+(m.mor+m.elr)+'</div>';
+  h+='<div class="card"><div class="sh">ダイスロール</div>';
+  h+='<div class="notebox">';
+  h+='<div style="color:#cc3333;white-space:nowrap">💀 DR12(6-6)</div><div style="color:#777">→ 自動失敗＋損耗確定</div>';
+  if(m.utype==="mmc"&&m.ldr===0)h+='<div style="color:#777;white-space:nowrap">🔻 ゾロ目(指揮官なし)</div><div style="color:#777">→ 畏縮(Cower)：判定列1列低下</div>';
+  h+='</div>';
+  h+=DR("🟥 色付きダイス",m.rd,"#e74c3c","MD('rd',");
+  h+=DR("⬜ 白ダイス",m.wd,"#ccc","MD('wd',");
+  h+=ROLLBTNS("MROLL","MJUDGE",m.rd&&m.wd);
+  h+='</div>';
+  if(m.res){
+    var r=m.res,sm=MSTAT(r.st,r.ef);
+    h+='<div class="res" style="border-color:'+sm.c+'">';
+    h+='<div class="rrow"><div><div class="lbl">修正前DR</div><div class="rv">'+r.raw+'</div></div>';
+    h+='<span class="rarr">→</span>';
+    h+='<div><div class="lbl">修正後DR</div><div class="rv" style="color:#FFD700">'+r.mod+'</div></div></div>';
+    h+='<div class="rmain" style="background:#222;border:1px solid '+sm.c+'44;color:'+sm.c+'">'+sm.i+' '+sm.t+'</div>';
+    if(r.ef)h+='<div class="rnote" style="color:#cc3333">DR'+r.mod+' > ELR限界値'+(m.mor+m.elr)+' → クラス低下置換確定(国籍別チャートを参照)</div>';
+    h+='<button class="resetbtn" onclick="MRES()">↩ リセット</button></div>';
+  }
+  return h;
+}
+function MSTAT(s,ef){
+  if(s==="ok")return{t:"MC成功",c:"#FFD700",i:"👍"};
+  if(s==="pin")return{t:"クギ付け状態",c:"#FFD700",i:"📌"};
+  if(s==="brk")return{t:ef?"MC失敗＋クラス低下":"MC失敗→混乱＋DM",c:ef?"#cc3333":"#cc8800",i:ef?"‼":"😵"};
+  if(s==="ptcOk")return{t:"PTC成功",c:"#FFD700",i:"👍"};
+  if(s==="auto")return{t:"自動失敗＋損耗(DR12)",c:"#aa0000",i:"☠"};
+  return{t:s,c:"#aaa",i:"?"};
+}
+function MS(k,v){S.mc[k]=v;S.mc.res=null;Draw();}
+function MD(k,v){S.mc[k]=v;S.mc.res=null;Draw();}
+function MRES(){S.mc.res=null;S.mc.rd=0;S.mc.wd=0;Draw();}
+function MROLL(){roll(function(r,w){S.mc.rd=r;S.mc.wd=w;MJUDGE();});}
+function MJUDGE(){
+  var m=S.mc,r=m.rd,w=m.wd;
+  if(!r||!w)return;
+  var mdrm=m.ptc?0:{NMC:0,"1MC":1,"2MC":2,"3MC":3}[m.type]||0;
+  var tdrm=mdrm+m.ldr+(m.dm?4:0);
+  var raw=r+w,mod=raw+tdrm,st,ef=false;
+  if(raw===12)st="auto";
+  else if(m.ptc)st=mod<=m.mor?"ptcOk":"pin";
+  else{
+    if(mod<m.mor)st="ok";
+    else if(mod===m.mor)st="pin";
+    else{st="brk";if(m.utype==="mmc"&&!m.ldrImm&&mod>m.mor+m.elr)ef=true;}
+  }
+  S.mc.res={raw:raw,mod:mod,st:st,ef:ef};Draw();
+}
+
+// ===== CC =====
+function CC(){
+  var c=S.cc;
+  function ratio(a,d){
+    if(!a||!d)return -1;var r=a/d;
+    if(r>=6)return 7;if(r>=5)return 6;if(r>=4)return 5;if(r>=3)return 4;
+    if(r>=2)return 3;if(r>=1)return 2;if(r>=0.5)return 1;return 0;
+  }
+  var ri=ratio(c.af,c.df),elim=ri>=0?CCN[ri]:null;
+  var h="";
+  h+='<div class="card"><div class="sh">FP入力</div>';
+  h+='<div class="lbl">攻撃側FP</div><div class="btns">';
+  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30].forEach(function(n){h+='<button class="b'+(c.af===n?" on":"")+'" onclick="CS(\'af\','+n+')">'+n+'</button>';});
+  h+='</div>';
+  h+='<div class="lbl">防御側FP</div><div class="btns">';
+  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30].forEach(function(n){h+='<button class="b'+(c.df===n?" on":"")+'" onclick="CS(\'df\','+n+')">'+n+'</button>';});
+  h+='</div>';
+  if(elim!==null)h+='<div style="background:#222;border-radius:3px;padding:6px;font-size:12px;color:#777">戦闘比 '+CCR[ri]+' → 除去ナンバー <b style="color:#FFD700">'+elim+'</b></div>';
+  h+='</div>';
+  h+='<div class="card"><div class="sh">CC DRM</div>';
+  h+='<div class="lbl">攻撃側DRM</div><div class="btns">';
+  [[-2,"不意打ち−2"],[-1,"−1"],[0,"±0"],[1,"+1"],[2,"+2"]].forEach(function(t){
+    h+='<button class="b'+(c.adrm===t[0]?" on":"")+'" onclick="CS(\'adrm\','+t[0]+')">'+t[1]+'</button>';
+  });
+  h+='</div></div>';
+  h+='<div class="card"><div class="sh">CC DR入力</div>';
+  h+='<div class="notebox">';
+  h+='<div style="color:#FFD700;white-space:nowrap">🎖 DR2(ゾロ目1-1)</div><div style="color:#777">→ MMC参加時：指揮官誕生判定</div>';
+  h+='<div style="color:#cc3333;white-space:nowrap">💀 DR12(6-6)</div><div style="color:#777">→ 自動失敗確定</div>';
+  h+='</div>';
+  h+=DR("🟥 色付きダイス",c.rd,"#e74c3c","CD('rd',");
+  h+=DR("⬜ 白ダイス",c.wd,"#ccc","CD('wd',");
+  h+=ROLLBTNS("CROLL","CJUDGE",c.rd&&c.wd&&elim!==null);
+  h+='</div>';
+  if(c.res){
+    var r=c.res,sm=CSTAT(r.st);
+    h+='<div class="res" style="border-color:'+sm.c+'">';
+    h+='<div class="rrow"><div><div class="lbl">修正前DR</div><div class="rv">'+r.raw+'</div></div>';
+    h+='<span class="rarr">→</span>';
+    h+='<div><div class="lbl">修正後DR</div><div class="rv" style="color:#FFD700">'+r.mod+'</div></div></div>';
+    h+='<div class="rmain" style="background:#222;border:1px solid '+sm.c+'44;color:'+sm.c+'">'+sm.i+' '+sm.t+'</div>';
+    if(r.pro)h+='<div class="rnote" style="color:#FFD700">🎖 DR=2かつMMC参加 → 指揮官誕生判定</div>';
+    h+='<button class="resetbtn" onclick="CRES()">↩ リセット</button></div>';
+  }
+  return h;
+}
+function CSTAT(s){
+  if(s==="elim")return{t:"攻撃成功！防御側除去",c:"#cc3333",i:"💀"};
+  if(s==="cas")return{t:"損耗(防御側1ユニット)",c:"#cc8800",i:"☠"};
+  return{t:"効果なし",c:"#777",i:"—"};
+}
+function CS(k,v){S.cc[k]=v;S.cc.res=null;Draw();}
+function CD(k,v){S.cc[k]=v;S.cc.res=null;Draw();}
+function CRES(){S.cc.res=null;S.cc.rd=0;S.cc.wd=0;Draw();}
+function CROLL(){roll(function(r,w){S.cc.rd=r;S.cc.wd=w;CJUDGE();});}
+function CJUDGE(){
+  var c=S.cc,r=c.rd,w=c.wd;
+  if(!r||!w)return;
+  function ratio(a,d){var rv=a/d;if(rv>=6)return 7;if(rv>=5)return 6;if(rv>=4)return 5;if(rv>=3)return 4;if(rv>=2)return 3;if(rv>=1)return 2;if(rv>=0.5)return 1;return 0;}
+  var ri=ratio(c.af,c.df),elim=CCN[ri];
+  var raw=r+w,mod=raw+c.adrm,st=mod<elim?"elim":mod===elim?"cas":"miss";
+  S.cc.res={raw:raw,mod:mod,st:st,pro:raw===2};Draw();
+}
+
+// ===== RALLY =====
+function RALLY(){
+  var rl=S.rl;
+  var drm=(rl.self?1:rl.ldr)+(rl.bld?-1:0)+(rl.dm?4:0);
+  var h="";
+  h+='<div class="card"><div class="sh">回復種別</div><div class="btns">';
+  h+='<button class="b'+(rl.self?" on":"")+'" onclick="RS(\'self\',true)">自己回復(+1DRM)</button>';
+  h+='<button class="b'+(rl.self?"":" on")+'" onclick="RS(\'self\',false)">指揮官回復(LDR)</button>';
+  h+='</div>';
+  if(!rl.self){
+    h+='<div class="lbl">指揮官修正</div><div class="btns">';
+    [["−1",-1],["−2",-2],["+1",1]].forEach(function(t){
+      h+='<button class="b'+(rl.ldr===t[1]?" on":"")+'" onclick="RS(\'ldr\','+t[1]+')">'+t[0]+'</button>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div class="card"><div class="sh">ユニット設定</div>';
+  h+='<div class="lbl">混乱士気値(カウンター裏面)</div><div class="btns">';
+  [5,6,7,8,9].forEach(function(v){h+='<button class="b'+(rl.bm===v?" on":"")+'" onclick="RS(\'bm\','+v+')">'+v+'</button>';});
+  h+='</div><div class="btns">';
+  h+='<button class="b'+(rl.bld?" on":"")+'" onclick="RT(\'bld\')">林・建物内(−1)</button>';
+  h+='<button class="b red'+(rl.dm?" on":"")+'" onclick="RT(\'dm\')">DM状態(+4)</button>';
+  h+='</div></div>';
+  h+='<div class="card" style="background:#222;font-size:12px;color:#777">混乱士気値'+rl.bm+' / DRM+'+drm+'</div>';
+  h+='<div class="card"><div class="sh">回復ダイス</div>';
+  h+='<div class="notebox">';
+  h+='<div style="color:#FFD700;white-space:nowrap">✨ DR2(ゾロ目1-1)</div><div style="color:#777">→ 自動回復成功'+(rl.self?" + 指揮官誕生判定":"")+'</div>';
+  h+='<div style="color:#cc3333;white-space:nowrap">💀 DR12(6-6)</div><div style="color:#777">→ 自動失敗＋損耗</div>';
+  h+='</div>';
+  h+=DR("🟥 色付きダイス",rl.rd,"#e74c3c","RD('rd',");
+  h+=DR("⬜ 白ダイス",rl.wd,"#ccc","RD('wd',");
+  h+=ROLLBTNS("RROLL","RJUDGE",rl.rd&&rl.wd);
+  h+='</div>';
+  if(rl.res){
+    var r=rl.res,sm=RSTAT(r.st);
+    h+='<div class="res" style="border-color:'+sm.c+'">';
+    h+='<div class="rrow"><div><div class="lbl">修正前DR</div><div class="rv">'+r.raw+'</div></div>';
+    h+='<span class="rarr">→</span>';
+    h+='<div><div class="lbl">修正後DR(+'+drm+')</div><div class="rv" style="color:#FFD700">'+r.mod+'</div></div></div>';
+    h+='<div class="rmain" style="background:#222;border:1px solid '+sm.c+'44;color:'+sm.c+'">'+sm.i+' '+sm.t+'</div>';
+    if(r.pro)h+='<div class="rnote" style="color:#FFD700">🎖 DR=2(ゾロ目)→ 指揮官誕生判定</div>';
+    h+='<button class="resetbtn" onclick="RRES()">↩ リセット</button></div>';
+  }
+  return h;
+}
+function RSTAT(s){
+  if(s==="ok"||s==="a2")return{t:s==="a2"?"自動回復(DR2)":"回復成功！",c:"#FFD700",i:"👍"};
+  if(s==="fail")return{t:"回復失敗(混乱継続)",c:"#cc8800",i:"😵"};
+  return{t:"自動失敗＋損耗(DR12)",c:"#aa0000",i:"☠"};
+}
+function RS(k,v){S.rl[k]=v;S.rl.res=null;Draw();}
+function RT(k){S.rl[k]=!S.rl[k];S.rl.res=null;Draw();}
+function RD(k,v){S.rl[k]=v;S.rl.res=null;Draw();}
+function RRES(){S.rl.res=null;S.rl.rd=0;S.rl.wd=0;Draw();}
+function RROLL(){roll(function(r,w){S.rl.rd=r;S.rl.wd=w;RJUDGE();});}
+function RJUDGE(){
+  var rl=S.rl,r=rl.rd,w=rl.wd;
+  if(!r||!w)return;
+  var drm=(rl.self?1:rl.ldr)+(rl.bld?-1:0)+(rl.dm?4:0);
+  var raw=r+w,mod=raw+drm,st;
+  if(raw===2)st="a2";
+  else if(raw===12)st="a12";
+  else if(mod<=rl.bm)st="ok";
+  else st="fail";
+  S.rl.res={raw:raw,mod:mod,st:st,pro:raw===2&&rl.self};Draw();
+}
+
+// ===== SCEN =====
+function SCEN(){
+  var s=S.sc,h="";
+  h+='<div class="card"><div class="sh">シナリオ選択</div><div style="display:flex;flex-wrap:wrap">';
+  SCN.forEach(function(sc){
+    h+='<button class="scbtn'+(s.sel===sc.id?" on":"")+'" onclick="SSEL(\''+sc.id+'\')">';
+    h+='<div style="font-weight:bold;color:#FFD700">'+sc.id+'</div>';
+    h+='<div style="font-size:10px;margin-top:2px">'+sc.jp+'</div></button>';
+  });
+  h+='</div></div>';
+  if(s.sel){
+    var sc=SCN.filter(function(x){return x.id===s.sel;})[0];
+    h+='<div class="card">';
+    h+='<div style="font-size:10px;color:#777">'+sc.id+' / '+sc.en+'</div>';
+    h+='<div style="font-size:16px;font-weight:bold;color:#FFD700;margin:4px 0 6px">'+sc.jp+'</div>';
+    h+='<div style="font-size:11px;color:#777;margin-bottom:6px">';
+    h+='📍 '+sc.loc+'　📅 '+sc.dt+'　⏱ '+sc.trn+'ターン';
+    if(sc.map)h+='<br>🗺 '+sc.map;
+    if(sc.first)h+='<br>▶ '+sc.first;
+    h+='</div>';
+    h+='<div class="vbox"><div style="font-size:10px;color:#FFD700;margin-bottom:3px">🏆 勝利条件</div>'+sc.vic+'</div>';
+    if(sc.bal){
+      h+='<div style="font-size:11px;color:#777;margin-bottom:6px">';
+      h+='<span style="color:#FFD700">⚖ バランス</span>　☆米有利：'+sc.bal.us+'　✚独/ソ有利：'+sc.bal.ger;
+      h+='</div>';
+    }
+    if(sc.ssr&&sc.ssr.length)sc.ssr.forEach(function(r,i){h+='<div class="ssr">'+r+'</div>';});
+    h+='</div>';
+    Object.keys(sc.f).forEach(function(nat){
+      var f=sc.f[nat],nc={USA:"#6699cc",GER:"#aa9966",SOV:"#996666"}[nat]||"#666";
+      var nl={USA:"🇺🇸 米軍",GER:"🇩🇪 独軍",SOV:"🇷🇺 ソ連"}[nat]||nat;
+      h+='<div class="card"><div style="font-size:13px;font-weight:bold;color:'+nc+';margin-bottom:6px">'+nl+' [ELR:'+f.elr+']</div>';
+      f.u.forEach(function(u){h+='<div style="font-size:12px;color:#777;border-left:2px solid '+nc+'44;padding-left:6px;margin-bottom:3px">'+u+'</div>';});
+      h+='</div>';
+    });
+  }
+  return h;
+}
+function SSEL(id){S.sc.sel=id;Draw();}
+
+// ===== UNIT =====
+function UNIT(){
+  var u=S.un,d=UNT[u.nat],nc=d.col,h="";
+  h+='<div class="card"><div class="sh">国籍選択</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px">';
+  Object.keys(UNT).forEach(function(k){
+    h+='<button class="b'+(u.nat===k?" on":"")+' " style="flex:1" onclick="US(\'nat\',\''+k+'\')">'+UNT[k].lbl+'</button>';
+  });
+  h+='</div><div class="btns">';
+  h+='<button class="b'+(u.tab==="mmc"?" on":"")+'" onclick="US(\'tab\',\'mmc\')">MMC(分隊・HS)</button>';
+  h+='<button class="b'+(u.tab==="smc"?" on":"")+'" onclick="US(\'tab\',\'smc\')">SMC(指揮官)</button>';
+  h+='<button class="b'+(u.tab==="sw"?" on":"")+'" onclick="US(\'tab\',\'sw\')">SW(支援火器)</button>';
+  h+='</div></div>';
+  if(u.tab==="mmc")d.mmc.forEach(function(m){
+    h+='<div class="uc" style="border-left-color:'+(m.green?"#cc8800":nc)+'"><div class="ul">'+m.lbl;
+    if(m.af)h+='<span style="font-size:10px;background:#FFD70022;border:1px solid #FFD70055;color:#FFD700;padding:1px 5px;border-radius:2px;margin-left:4px">FP下線(AF)</span>';
+    if(m.sr)h+='<span style="font-size:10px;background:#33333322;border:1px solid #555;color:#aaa;padding:1px 5px;border-radius:2px;margin-left:4px">自己回復</span>';
+    if(m.ei)h+='<span style="font-size:10px;background:#FFD70022;border:1px solid #FFD70055;color:#FFD700;padding:1px 5px;border-radius:2px;margin-left:4px">ELR免除</span>';
+    if(m.hs)h+='<span style="font-size:10px;background:#33333322;border:1px solid #555;color:#aaa;padding:1px 5px;border-radius:2px;margin-left:4px">HS</span>';
+    if(m.green)h+='<span style="font-size:10px;background:#cc880022;border:1px solid #cc880055;color:#cc8800;padding:1px 5px;border-radius:2px;margin-left:4px">未熟兵</span>';
+    h+='</div>';
+    h+='<div class="us">';
+    h+='<span>FP <b style="color:#ddd">'+m.fp+'</b></span>';
+    h+='<span>射程 <b style="color:#ddd">'+m.rng+'</b></span>';
+    h+='<span>士気 <b style="color:#ddd">'+m.mor+'</b></span>';
+    h+='<span>混乱士気 <b style="color:#ddd">'+m.bm+'</b></span>';
+    if(m.smk)h+='<span>煙幕 <b style="color:#FFD700">'+m.smk+'</b></span>';
+    h+='</div>';
+    if(m.note)h+='<div style="font-size:10px;color:#555;margin-top:2px">'+m.note+'</div>';
+    h+='</div>';
+  });
+  if(u.tab==="mmc"&&d.elr&&d.elr.length){
+    h+='<div class="card"><div style="font-size:11px;color:#FFD700;margin-bottom:6px">⬇ ELR超過クラス低下チェーン</div>';
+    d.elr.forEach(function(e){h+='<div style="font-size:11px;color:#777;padding:2px 0">'+e.from+' → <b style="color:#cc3333">'+e.to+'</b></div>';});
+    h+='</div>';
+  }
+  if(u.tab==="smc")d.smc.forEach(function(s){
+    var cc=s.cmd<0?"#FFD700":s.cmd>0?"#cc3333":"#777";
+    h+='<div class="uc" style="border-left-color:'+nc+'"><div class="ul">'+s.lbl+'</div>';
+    h+='<div class="us">';
+    h+='<span>士気 <b style="color:#ddd">'+s.mor+'</b></span>';
+    h+='<span>混乱士気 <b style="color:#ddd">['+s.bm+']</b></span>';
+    h+='<span>指揮修正 <b style="color:'+cc+'">'+(s.cmd===0?"±0":s.cmd>0?"+"+s.cmd:s.cmd)+'</b></span>';
+    h+='</div>';
+    if(s.note)h+='<div style="font-size:10px;color:#555;margin-top:2px">'+s.note+'</div>';
+    h+='</div>';
+  });
+  if(u.tab==="sw"){
+    var swData=typeof SW_DETAIL!=="undefined"?SW_DETAIL:SWT;
+    swData.forEach(function(s){
+      h+='<div class="card"><div class="ul">'+(s.name||s.lbl)+'</div>';
+      h+='<div class="us">';
+      h+='<span>FP <b style="color:#ddd">'+s.fp+'</b></span>';
+      if(s.rof!==undefined&&s.rof!=="—")h+='<span>ROF# <b style="color:#ddd">'+s.rof+'</b></span>';
+      if(s.b&&s.b!=="—")h+='<span>B# <b style="color:#cc8800">'+s.b+'</b></span>';
+      if(s.x&&s.x!=="—")h+='<span>X# <b style="color:#cc3333">'+s.x+'</b></span>';
+      if(s.pp)h+='<span>PP <b style="color:#ddd">'+s.pp+'</b></span>';
+      h+='</div>';
+      if(s.note)h+='<div style="font-size:11px;color:#555;margin-top:4px;line-height:1.4">'+s.note+'</div>';
+      h+='</div>';
+    });
+  }
+  return h;
+}
+function US(k,v){S.un[k]=v;Draw();}
+
+// テンキー入力
+function NPAD(gid, digit){
+  S.fire.grps.forEach(function(g){
+    if(g.id!==gid){return;}
+    if(digit==="C"){g.fp=0;}
+    else if(digit==="BS"){g.fp=Math.floor(g.fp/10);}
+    else{
+      var next=g.fp*10+parseInt(digit);
+      if(next<=30) g.fp=next;
+    }
+  });
+  S.fire.result=null;
+  Draw();
+}
+
+// ALL CLEAR
+function ALLCLEAR(){
+  S.fire={ph:"PFPh",swc:{},grps:[{id:1,ut:"squad",st:"good",fp:6,af:false,green:false,sh:"normal",sw:[]}],nid:2,
+    tem:0,ldr:0,cx:false,los:{},ffmo:false,ffnam:false,rd:0,wd:0,res:null};
+  S.mc={ptc:false,type:"NMC",utype:"mmc",mor:7,elr:3,ldrImm:false,ldr:0,dm:false,rd:0,wd:0,res:null};
+  S.cc={af:4,df:4,adrm:0,rd:0,wd:0,res:null};
+  S.rl={self:true,bm:7,bld:false,dm:false,ldr:-1,rd:0,wd:0,res:null};
+  Draw();
+}
+// INIT
+Draw();
+</script>
+</body>
+</html>
